@@ -14,7 +14,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm, type SubmitHandler } from "react-hook-form"
 
 
@@ -31,21 +31,36 @@ export function SignupForm({
   ...props
 }: React.ComponentProps<"div">) {
   const [loading , setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  
+  
   const { register, handleSubmit, getValues, reset, formState: { errors } } = useForm<SignupFormData>();
-  const onSubmit : SubmitHandler<SignupFormData> = data => {
-    setLoading(true);
-    try {
-      localStorage.setItem("signupData", JSON.stringify(data));
-      alert("Signup data saved successfully!");
-      reset()
-      setLoading(false);
-      window.location.href = "/login";
-    }catch (error) {
-      alert("Error saving signup data");
-      setLoading(false);
+  useEffect(() => {}, [])
+  const onSubmit: SubmitHandler<SignupFormData> = data => {
+  setLoading(true);
+  try {
+    const raw = localStorage.getItem("signupdata")
+    const users: SignupFormData[] = raw ? JSON.parse(raw) : []
+
+    const exists = users.some((u) => u.email === data.email)
+    if (exists) {
+      setErrorMessage("Email sudah terdaftar.")
+      setMessage(null)
+      return
     }
-    console.log(data);
-  };
+
+    const newUsers = [...users, data]
+    localStorage.setItem("signupdata", JSON.stringify(newUsers))
+
+    setMessage("Akun berhasil dibuat.")
+    setErrorMessage(null)
+    reset()
+  } finally {
+    setLoading(false)
+  }
+};
+
 
   
   return (
@@ -104,6 +119,16 @@ export function SignupForm({
               </Field>
               <Field>
                 <Button disabled={loading} type="submit">Create Account</Button>
+                {message && (
+                  <div className="mt-2 text-sm text-green-600">
+                    {message}
+                  </div>
+                )}
+                {errorMessage && (
+                  <div className="mt-2 text-sm text-red-600">
+                    {errorMessage}
+                  </div>
+                )}
                 <FieldDescription className="text-center">
                   Already have an account? <a href="/login">Sign in</a>
                 </FieldDescription>

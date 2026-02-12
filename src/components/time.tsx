@@ -2,18 +2,18 @@ import { useEffect, useState } from "react";
 
 export default function Time({ setFinished }: { setFinished: (finished: boolean) => void }) {
   const [secondsLeft, setSecondsLeft] = useState<number>(() => {
-    const saved = localStorage.getItem("quizSecondsLeft");
+    const saved = localStorage.getItem("quizTargetTime");
     return saved ? parseInt(saved) : 100;
   });
 
   useEffect(() => {
     if (secondsLeft <= 0) {
-      localStorage.removeItem("quizSecondsLeft");
+      localStorage.removeItem("quizTargetTime");
       setFinished(true);
       return;
     }
 
-    localStorage.setItem("quizSecondsLeft", secondsLeft.toString());
+    localStorage.setItem("quizTargetTime", secondsLeft.toString());
 
     const timer = setInterval(() => {
       setSecondsLeft((prev) => prev - 1);

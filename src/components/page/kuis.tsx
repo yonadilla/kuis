@@ -2,6 +2,15 @@ import { useEffect, useState } from "react";
 import Time from "../time";
 import useFetcher from "@/lib/useFetch";
 
+// helper untuk convert simbol HTML (&amp;, &quot;, dsb) jadi teks biasa
+function decodeHtml(html: string): string {
+  if (!html) return "";
+  if (typeof window === "undefined") return html;
+  const txt = document.createElement("textarea");
+  txt.innerHTML = html;
+  return txt.value;
+}
+
 export default function Kuis() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [finished, setFinished] = useState(false);
@@ -20,7 +29,7 @@ export default function Kuis() {
     
     const getToken = localStorage.getItem("loginSession");
     if (!getToken) {
-      alert("You must be logged in to access the quiz.");
+      alert("Anda harus login untuk mengakses kuis.");
       window.location.href = "/login";
     }
 
@@ -51,8 +60,6 @@ export default function Kuis() {
   },[currentQuestionIndex, answers, score, finished, questionData])
 
 
-  
-
   const handleAnswerSelect = (answer: string) => {
   setAnswers(prev => ({
     ...prev,
@@ -70,13 +77,18 @@ const handleRestart = () => {
 
 const handleCheckAnswers = () => {
   questionData.map((question, index) => {
-    if (answers[index] === question.correct_answer) {
+    
+    if (answers[index] === undefined) {
+      return      
+    }
+    else if (answers[index] === question.correct_answer) {
       setScore(prev => ({
         ...prev,
         corretAnswers: prev.corretAnswers + 1,
         scoreAnswer: prev.scoreAnswer + 10
       }));
-    } else {
+    } 
+     else {
       setScore(prev => ({
         ...prev,
         falseAnswers: prev.falseAnswers + 1
@@ -86,15 +98,20 @@ const handleCheckAnswers = () => {
 }
 
 
+
   if (finished) {
     return (
-      <div className="p-6">
-        <h2 className="text-2xl font-bold">Quiz Results</h2>
-        <p className="mt-4">Score: {score.scoreAnswer}</p>
-        <p className="mt-2">
-          Correct: {score.corretAnswers} | Incorrect: {score.falseAnswers}
+      <div className="p-6 flex flex-col items-center gap-3 uppercase">
+        <h2 className="text-2xl font-bold">Hasil Kuis</h2>
+        <p className="mt-4 text-4xl font-bold">Skor: {score.scoreAnswer}</p>
+        <p className="mt-2 text-2xl">
+          Jawaban benar: {score.corretAnswers} 
         </p>
-        <p>Total Questions: {score.corretAnswers + score.falseAnswers}</p>
+        <p className="mt-2 text-2xl">
+          Jawaban salah: {score.falseAnswers}
+        </p>
+        <p className="text-2xl">Total soal yang dijawab: {score.corretAnswers + score.falseAnswers}</p>
+        <p className="text-2xl">Total soal: {questionData.length}</p>
         <div className="mt-6 flex gap-2">
           <button
             className="px-4 py-2 bg-blue-500 text-white rounded"
@@ -103,7 +120,7 @@ const handleCheckAnswers = () => {
              handleRestart();
             }}
           >
-            Restart
+            Mulai Ulang
           </button>
         </div>
       </div>
@@ -117,14 +134,14 @@ const handleCheckAnswers = () => {
     <>
       <div className="max-w-md mx-auto p-4">
         <h1 className="text-xl font-bold mb-4">Kuis</h1>
-        
+        <p>Soal {currentQuestionIndex + 1} / {questionData.length}</p>
+        <p>Soal terjawab {Object.keys(answers).length}</p>
         <div className="space-y-4">
           <div className="p-4 border rounded shadow-sm">
             <h2 className="font-semibold mb-3">
               Q{currentQuestionIndex + 1}:{" "}
-              {questionData[currentQuestionIndex]?.question}
+              {decodeHtml(questionData[currentQuestionIndex]?.question)}
             </h2>
-            
             {Array.isArray(questionData[currentQuestionIndex]?.all_answers) &&
               questionData[currentQuestionIndex].all_answers.map((a, i) => {
                 const isSelected = answers[currentQuestionIndex] === a;
@@ -141,7 +158,7 @@ const handleCheckAnswers = () => {
                           : 'bg-gray-100 text-black hover:bg-gray-200'
                       }`}
                     >
-                      {a}
+                      {decodeHtml(a)}
                     </button>
                   </div>
                 );
@@ -156,7 +173,7 @@ const handleCheckAnswers = () => {
                 className="bg-gray-500 text-white px-4 py-2 rounded flex-1"
                 onClick={() => setCurrentQuestionIndex((prev) => Math.max(prev - 1, 0))}
               >
-                Previous
+                Sebelumnya
               </button>
             )}
 
@@ -165,14 +182,14 @@ const handleCheckAnswers = () => {
                 onClick={() => setCurrentQuestionIndex((prev) => Math.min(prev + 1, questionData.length - 1))}
                 className="bg-blue-600 text-white px-4 py-2 rounded flex-1"
               >
-                Next Question
+                Soal Berikutnya
               </button>
             ) : (
               <button
                 className="bg-green-600 text-white px-4 py-2 rounded flex-1"
                 onClick={() => {setFinished(true), handleCheckAnswers() }}
               >
-                Complete Quiz
+                Selesai Kuis
               </button>
             )}
           </div>
@@ -181,7 +198,7 @@ const handleCheckAnswers = () => {
             className="bg-red-500 text-white px-4 py-2 rounded w-full mt-4"
             onClick={() => {setFinished(true), handleCheckAnswers() }}
           >
-            Submit Quiz Now
+            Kumpulkan Jawaban Sekarang
           </button>
         </div>
 
@@ -191,7 +208,7 @@ const handleCheckAnswers = () => {
       </div>
     </>
   ) : (
-    <div className="flex justify-center items-center h-screen">Loading...</div>
+    <div className="flex justify-center items-center h-screen">Memuat...</div>
   )
 );
 }

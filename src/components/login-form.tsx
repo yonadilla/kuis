@@ -30,29 +30,45 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   
   const [ loading, setLoading ] = useState(false);
+  const [message, setMessage] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const { register, handleSubmit, reset } = useForm<LoginFormProps>();
   
   const randomString = Math.random().toString(36).substring(2, 15);
   const onSubmit : SubmitHandler<LoginFormProps> = data => {
     setLoading(true);
-    console.log(data);
     try {
-      const storedData = localStorage.getItem("signupData");
-        const parsedData = JSON.parse(storedData);
-        if (parsedData.email === data.email && parsedData.password === data.password) {
-          alert("Login successful!");
-          window.location.href = "/";
-          localStorage.setItem("loginSession", JSON.stringify({
-            email: data.email,
-            sessionId: randomString,
-            loginTime: Date.now()
-          }));
-        } else {
-          alert("Email and password not match")
-          reset();
-        }
-      setLoading(false)
+      const storedData = localStorage.getItem("signupdata");
+      const users: LoginFormProps[] = storedData ? JSON.parse(storedData) : [];
+      const user = users.find((u) => u.email === data.email);
+
+      if (!user) {
+        setErrorMessage("Email tidak ditemukan.");
+        setMessage(null);
+        reset({ password: "" });
+        return;
+      }
+
+      if (user.password !== data.password) {
+        setErrorMessage("Password tidak sesuai.");
+        setMessage(null);
+        reset({ password: "" });
+        return;
+      }
+      setErrorMessage(null);
+      setMessage("Login berhasil!");
+      localStorage.setItem("loginSession", JSON.stringify({
+        email: data.email,
+        sessionId: randomString,
+        loginTime: Date.now()
+      }));
+      window.location.href = "/";
     } catch (error) {
+      setLoading(false);
+      setErrorMessage("Terjadi kesalahan saat login.");
+      setMessage(null);
+      return;
+    } finally {
       setLoading(false);
     }
   }
@@ -94,6 +110,16 @@ export function LoginForm({
               </Field>
               <Field>
                 <Button type="submit" disabled={loading}>Login</Button>
+                {message && (
+                  <div className="mt-2 text-sm text-green-600">
+                    {message}
+                  </div>
+                )}
+                {errorMessage && (
+                  <div className="mt-2 text-sm text-red-600">
+                    {errorMessage}
+                  </div>
+                )}
                 <FieldDescription className="text-center">
                   Don&apos;t have an account? <a href="/register">Sign up</a>
                 </FieldDescription>
