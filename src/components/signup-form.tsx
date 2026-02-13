@@ -55,6 +55,7 @@ export function SignupForm({
 
     setMessage("Akun berhasil dibuat.")
     setErrorMessage(null)
+    window.location.href = "/login";
     reset()
   } finally {
     setLoading(false)

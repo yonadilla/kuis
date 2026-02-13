@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import Time from "../time";
 import useFetcher from "@/lib/useFetch";
 
-// helper untuk convert simbol HTML (&amp;, &quot;, dsb) jadi teks biasa
 function decodeHtml(html: string): string {
   if (!html) return "";
   if (typeof window === "undefined") return html;
@@ -130,7 +129,7 @@ const handleCheckAnswers = () => {
 
  
   return (
- questionData.length > 0 ? (
+    questionData.length > 0 ? (
     <>
       <div className="max-w-md mx-auto p-4">
         <h1 className="text-xl font-bold mb-4">Kuis</h1>
@@ -165,7 +164,6 @@ const handleCheckAnswers = () => {
               })}
           </div>
         </div>
-
         <div className="mt-6 flex flex-col gap-2">
           <div className="flex gap-2">
             {currentQuestionIndex > 0 && (
@@ -203,7 +201,7 @@ const handleCheckAnswers = () => {
         </div>
 
         <div className="mt-4 text-center">
-          <Time setFinished={setFinished}  />
+          <Time setFinished={setFinished} handleCheckAnswers={handleCheckAnswers}  />
         </div>
       </div>
     </>

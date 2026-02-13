@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export default function Time({ setFinished }: { setFinished: (finished: boolean) => void }) {
+export default function Time({ setFinished , handleCheckAnswers}: { setFinished: (finished: boolean) => void , handleCheckAnswers: () => void }) {
   const [secondsLeft, setSecondsLeft] = useState<number>(() => {
     const saved = localStorage.getItem("quizTargetTime");
     return saved ? parseInt(saved) : 100;
@@ -10,9 +10,9 @@ export default function Time({ setFinished }: { setFinished: (finished: boolean)
     if (secondsLeft <= 0) {
       localStorage.removeItem("quizTargetTime");
       setFinished(true);
+      handleCheckAnswers();
       return;
     }
-
     localStorage.setItem("quizTargetTime", secondsLeft.toString());
 
     const timer = setInterval(() => {
